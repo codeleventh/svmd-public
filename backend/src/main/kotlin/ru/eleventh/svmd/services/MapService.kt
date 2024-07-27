@@ -1,13 +1,9 @@
 package ru.eleventh.svmd.services
 
 import ru.eleventh.svmd.exceptions.SvmdException
-import ru.eleventh.svmd.model.ApiErrors
-import ru.eleventh.svmd.model.TransformedMap
+import ru.eleventh.svmd.model.*
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMap
-import ru.eleventh.svmd.model.responses.ApiResponse
-import ru.eleventh.svmd.model.responses.FailResponse
-import ru.eleventh.svmd.model.responses.MapResponse
 import java.time.Instant
 import kotlin.math.absoluteValue
 import kotlin.random.Random

@@ -6,7 +6,7 @@ import {Popup, Tooltip} from 'react-leaflet'
 import {flatten, head, pair, prop} from 'ramda'
 import {useSelector} from 'react-redux'
 import {headerByDirectiveSelector, headersByDirectiveSelector, themeSelector} from '../selectors'
-import {hyphenateSync} from 'hyphen/ru' // TODO: bear in mind that localizations are planned also
+import {hyphenateSync as hyphenateSyncRu} from 'hyphen/ru'
 import {CARD_LINK_TEXT, DEFAULT_FEATURE_NAME, DEFAULT_PADDING} from '../const'
 import {Splide, SplideSlide} from '@splidejs/react-splide'
 import Markdown from 'markdown-to-jsx'
@@ -130,7 +130,7 @@ export const Card: React.FC<IProps> = (cardProps) => {
                                 // <img> => void
                                 img: {component: React.Fragment}
                             }
-                        }}>{hyphenateSync(properties[cardText!] ?? '')}</Markdown>
+                        }}>{hyphenateSyncRu(properties[cardText!] ?? '')}</Markdown>
                     </Text>
 
                     {notEmpty(link) && (

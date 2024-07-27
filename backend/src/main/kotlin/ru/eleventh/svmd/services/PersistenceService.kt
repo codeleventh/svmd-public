@@ -10,6 +10,7 @@ import ru.eleventh.svmd.model.enums.Lang
 import ru.eleventh.svmd.model.enums.Theme
 import ru.eleventh.svmd.model.enums.TileProvider
 import java.time.Instant
+import java.util.*
 
 val dao = PersistenceService()
 
@@ -96,7 +97,10 @@ class PersistenceService {
 
     fun createUser(newUser: NewUser): Long? {
         val insertStatement = dbQuery {
-            UsersTable.insert { it[email] = newUser.email }
+            UsersTable.insert {
+                it[email] = newUser.email
+                it[password] = newUser.password
+            }
         }
         return insertStatement.resultedValues?.singleOrNull()?.let(this::toUser)?.id
     }
@@ -119,9 +123,33 @@ class PersistenceService {
             .singleOrNull()
     }
 
-    fun updateUser(user: User): Int = dbQuery {
-        UsersTable.update({ UsersTable.id eq user.id }) {
-            it[email] = user.email
+    fun updateUser(userId: Long, newPassword: String): Int = dbQuery {
+        UsersTable.update({ UsersTable.id eq userId }) {
+            it[password] = newPassword
         }
     }
+
+    fun createInvite(inviteCode: UUID) {
+        InvitesTable.insert {
+            it[code] = inviteCode
+            it[issuedAt] = Instant.now()
+        }
+    }
+
+    fun validateInvite(inviteCode: UUID): Boolean {
+        return InvitesTable.select {
+            InvitesTable.code eq inviteCode
+            InvitesTable.isUsed eq false
+        }.empty().not()
+    }
+
+    fun useInvite(inviteCode: UUID, userId: Long) {
+        InvitesTable.update({ InvitesTable.code eq inviteCode }) {
+            it[isUsed] = true
+            it[usedAt] = Instant.now()
+            it[usedBy] = userId
+        }
+    }
+
+
 }

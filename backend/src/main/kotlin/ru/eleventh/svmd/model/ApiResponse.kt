@@ -1,7 +1,6 @@
-package ru.eleventh.svmd.model.responses
+package ru.eleventh.svmd.model
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import ru.eleventh.svmd.model.TransformedMap
 
 open class ApiResponse(success: Boolean) {
     @JsonSerialize

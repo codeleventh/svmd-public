@@ -6,7 +6,7 @@ data class NewUser(val email: String, val password: String)
 
 data class User(val id: Long, val email: String, val password: String)
 
-object UsersTable : Table() {
+object UsersTable : Table("users") {
     val id = long("id").autoIncrement()
     val email = text("email").uniqueIndex()
     val password = text("password")

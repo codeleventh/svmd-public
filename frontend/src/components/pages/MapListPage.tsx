@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {Center, Loader, Notification, Table} from "@mantine/core";
+import {Center, Loader, Notification, Table, Title} from "@mantine/core";
 import {Edit, InfoCircle} from "tabler-icons-react";
 import {Link} from "react-router-dom";
 import {DATETIME_FORMAT, DEFAULT_FEATURE_NAME} from "../../const";
@@ -21,6 +21,7 @@ export const MapListPage: React.FC = () => {
     }, [])
 
     return (<>
+        <Title>Мои карты</Title>
         {!response
             ? <div id="error-wrapper"><Center><Loader/></Center></div>
             : !response.success

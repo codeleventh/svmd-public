@@ -32,6 +32,8 @@ import {calculateBounds, calculateColor} from './mapUtils'
 
 import '../css/map/leaflet.css'
 import {splitTags} from '../util'
+import {resolveTile} from "../model/tiles";
+import {useElementSize} from "@mantine/hooks";
 
 type Marker = (LeafletPolygon | LeafletCircleMarker);
 
@@ -51,11 +53,10 @@ export const Map: React.FC = () => {
     // TODO: cursed
     document.documentElement.style.setProperty('--themed-background', theme.background);
     document.documentElement.style.setProperty('--themed-foreground', theme.foreground);
-    document.documentElement.style.setProperty('--themed-link', theme.link);
+    document.documentElement.style.setProperty('--themed-link', theme.linkColor);
 
     const markerRefs = useRef(Array(features.length).fill(undefined))
-    const headerHeight = searchHeaders.length ? 125 : 0
-    // TODO: ↑ hardcoded cause useResizeObserver hook won't work for some reason
+    const {ref, height: headerHeight} = useElementSize();
 
     const updateColors = (featIndex: number) => {
         const ref = markerRefs?.current[featIndex]
@@ -127,19 +128,18 @@ export const Map: React.FC = () => {
                 zoomControl={false}
                 whenCreated={(map: LeafletMap) => {
                     map.options.zoomSnap = 0.75
-                    if (features.length == 0) return
+                    if (features.length == 0)
+                        return
                     else if (features.length > 1) {
                         const bounds = calculateBounds(features)
                         map.fitBounds(bounds, {
                             paddingTopLeft: [0, headerHeight],
                             paddingBottomRight: [DEFAULT_PADDING, 0]
-                            // TODO: sizes are in px, but how much height the footer actually is?
                         })
-                        // L.rectangle(bounds, {color: 'green', weight: 1}).addTo(map);
                     }
                 }}>
-                <MapHeader/>
-                <TileLayer url={tileProvider}/>
+                <div ref={ref}><MapHeader/></div>
+                <TileLayer url={resolveTile(tileProvider)}/>
                 {featureMarkers}
                 <Meerkat/>
             </MapContainer>

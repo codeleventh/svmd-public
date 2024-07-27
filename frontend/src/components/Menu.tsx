@@ -1,4 +1,4 @@
-import {Center, Group, Image, Space, Text} from "@mantine/core";
+import {Anchor, Center, Group, Image, Space, Text} from "@mantine/core";
 import {Link, NavLink} from "react-router-dom";
 import React from "react";
 import {IUser} from "../model/model";
@@ -29,17 +29,23 @@ export const Menu: React.FC = () => {
                     alt=''
                 /></NavLink>
             <Space h='md'/>
-            <Text size='lg'>
-                <Link to={"/create"}>Создать карту</Link>&nbsp;·&nbsp;
-                <Link to={"/maplist"}>Мои карты</Link>&nbsp;·&nbsp;
-                <Link to={"/manual"}>Справка</Link>&nbsp;·&nbsp;
-                <Link to={"/about"}>О проекте</Link>&nbsp;|&nbsp;
+            <Text size='md'>
+                <Link to={"/about"}>О проекте</Link>&nbsp;·&nbsp;
+                <Link to={"/manual"}>Как пользоваться</Link>
+                {user && <>&nbsp;·&nbsp;</> }
+                {user && <><Link to={"/create"}>Создать карту</Link>&nbsp;·&nbsp;</> }
+                {user && <><Link to={"/maplist"}>Мои карты</Link></> }
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                <span className="profile">
                 {
                     !!user
-                        ? <span className="profile"><UserCircle/> {user.email} <Link to="/logout"
-                                                                                     onClick={logOut}><Logout/></Link></span>
-                        : <Link to="/login">Вход</Link>
+                        ? <>
+                            <UserCircle/>&nbsp;<Link to={"/profile"}>{user.email}</Link>&nbsp;
+                            <Link to="/logout" onClick={logOut}><Logout/></Link>
+                        </>
+                        : <><Link to="/login">Вход</Link>&nbsp;·&nbsp;<Link to="/registration">Регистрация</Link></>
                 }
+                </span>
             </Text>
         </Group>
     </Center>

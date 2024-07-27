@@ -5,7 +5,7 @@ import {pipe, prop} from "ramda";
 import {errorHandler, responseToNotification} from "../utils/apiUtils";
 import {IMapMeta} from "../../model/model";
 import {AlertCircle} from "tabler-icons-react";
-import {Button, Group, Notification, PasswordInput, TextInput} from "@mantine/core";
+import {Button, Group, Notification, PasswordInput, TextInput, Title} from "@mantine/core";
 import {z} from 'zod';
 import {IApiResponse} from "../../model/rests";
 import axios from 'axios';
@@ -20,7 +20,7 @@ export const LoginPage: React.FC = () => {
         },
         schema: zodResolver(z.object({
             email: z.string().email('Введите корректный адрес почты'),
-            password: z.string().min(8, {message: 'Пароль должен быть не короче 8 символов'})
+            password: z.string().min(8, {message: 'Пароль не может быть короче 8 символов'})
         })),
     });
 
@@ -41,6 +41,7 @@ export const LoginPage: React.FC = () => {
     }, [response])
 
     return <>
+        <Title>Вход</Title>
         {!!response && responseToNotification(response)}
         {
             isLocalStorageAvailable() ||

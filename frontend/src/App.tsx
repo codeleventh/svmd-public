@@ -11,7 +11,7 @@ import MapPage from './components/pages/MapPage'
 import {MAP_ID_REGEX} from './const'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {noop} from './util'
-import {getTheme, Theme} from "./components/Themes";
+import {DEFAULT_THEME, resolveTheme} from "./model/themes";
 import {EditPage} from "./components/pages/EditPage";
 import {MapListPage} from "./components/pages/MapListPage";
 import {Page} from "./components/pages/Page";
@@ -21,6 +21,8 @@ import {MantineProvider} from '@mantine/core'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import {Errors} from './model/model'
+import {ProfilePage} from "./components/pages/ProfilePage";
+import {RegistrationPage} from "./components/pages/RegistrationPage";
 
 dayjs.locale('ru-RU')
 dayjs.extend(customParseFormat)
@@ -31,10 +33,10 @@ export const App: React.FC = () => {
         stackTrace={error.stack}
     />
 
-    const defaultTheme = getTheme(Theme.DEFAULT)
+    const defaultTheme = resolveTheme(DEFAULT_THEME)
     document.documentElement.style.setProperty('--themed-background', defaultTheme.background);
     document.documentElement.style.setProperty('--themed-foreground', defaultTheme.foreground);
-    document.documentElement.style.setProperty('--themed-link', defaultTheme.link);
+    document.documentElement.style.setProperty('--themed-link', defaultTheme.linkColor);
     // TODO: cursed
 
     return <React.StrictMode>
@@ -67,6 +69,12 @@ export const App: React.FC = () => {
                             </Route>
                             <Route exact path="/login">
                                 <Page childComponent={<LoginPage/>}/>
+                            </Route>
+                            <Route exact path="/profile">
+                                <Page childComponent={<ProfilePage/>}/>
+                            </Route>
+                            <Route exact path="/registration">
+                                <Page childComponent={<RegistrationPage/>}/>
                             </Route>
                             <Route exact path="/logout">
                                 <Redirect to="/"/>

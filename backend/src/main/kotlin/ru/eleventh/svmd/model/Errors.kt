@@ -13,7 +13,12 @@ object ApiErrors {
     const val NO_MAP_EXIST = "Не существует карты с таким идентификатором"
     const val BAD_SPREADSHEET_ID = "Указана некорректная ссылка на таблицу"
     const val CANNOT_UPDATE = "Обновление не удалось"
+    const val BAD_INVITE = "Инвайт не существует или уже использован"
+    const val BAD_PASSWORD = "Минимальная длина пароля — 8 символов"
     const val BAD_CREDS = "Указан неверный e-mail или пароль"
+    const val BAD_EMAIL = "Некорректный e-mail"
+    const val DUPLICATED_EMAIL = "Пользователь с таким e-mail уже существует"
+    const val BAD_REQUEST = "Не хватает параметров в запросе"
     const val UNAUTHORIZED = "Пользователь не авторизован"
     const val ACCESS_FORBIDDEN = "Доступ запрещен"
 }

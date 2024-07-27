@@ -2,6 +2,7 @@ package ru.eleventh.svmd
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.sanctionco.jmail.JMail
 import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
@@ -13,16 +14,13 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.util.*
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import ru.eleventh.svmd.exceptions.SvmdException
-import ru.eleventh.svmd.model.ApiErrors
+import ru.eleventh.svmd.model.*
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMap
 import ru.eleventh.svmd.model.db.NewUser
-import ru.eleventh.svmd.model.db.User
-import ru.eleventh.svmd.model.responses.ApiResponse
-import ru.eleventh.svmd.model.responses.FailResponse
-import ru.eleventh.svmd.model.responses.MapResponse
-import ru.eleventh.svmd.model.responses.SuccessResponse
+import ru.eleventh.svmd.services.InviteService
 import ru.eleventh.svmd.services.MapService
 import ru.eleventh.svmd.services.UserService
 
@@ -71,15 +69,19 @@ fun Application.configureRouting() {
     routing {
         route("api") {
             post("login") {
-                val email = call.parameters["email"]!!
-                val password = call.parameters["password"]!!
-                val user = UserService.getUserByEmail(email)
+                val email = call.parameters["email"]
+                val password = call.parameters["password"]
+                val user = email?.let { UserService.getUserByEmail(it) }
 
-                if (user?.password == password) {
+                if (email == null || password == null)
+                    call.respond(HttpStatusCode.BadRequest, FailResponse(ApiErrors.BAD_REQUEST))
+                else if (user == null)
+                    call.respond(HttpStatusCode.BadRequest, FailResponse(ApiErrors.NOT_FOUND))
+                else if (user.password != password) {
+                    call.respond(HttpStatusCode.Unauthorized, FailResponse(ApiErrors.BAD_CREDS))
+                } else {
                     call.sessions.set(UserSession(user.id))
                     call.respond(SuccessResponse("Logged successfully"))
-                } else {
-                    call.respond(FailResponse(ApiErrors.BAD_CREDS))
                 }
             }
             post("/logout") {
@@ -100,8 +102,10 @@ fun Application.configureRouting() {
                     put("{mapId}") {
                         val meta = call.receive<MapMeta>()
                         val mapId = call.parameters["mapId"]
-                        val userId = call.sessions.get<UserSession>()!!.userId
-                        call.respond(SuccessResponse(MapService.updateMap(mapId!!.uppercase(), meta, userId)))
+                        val userId = call.sessions.get<UserSession>()?.userId
+                        if (userId == null)
+                            call.respond(HttpStatusCode.Unauthorized, FailResponse(ApiErrors.UNAUTHORIZED))
+                        else call.respond(SuccessResponse(MapService.updateMap(mapId!!.uppercase(), meta, userId)))
                     }
                 }
             }
@@ -120,7 +124,24 @@ fun Application.configureRouting() {
                 get("geojson") { TODO() }
             }
             route("user") {
-                post { call.respond(UserService.createUser(call.receive<NewUser>())!!) }
+                post {
+                    val (email, password, invite) = call.receive<RegistrationRequest>()
+
+                    if (!JMail.isValid(email))
+                        call.respond(FailResponse(ApiErrors.BAD_EMAIL))
+                    if (!UserService.validatePassword(password))
+                        call.respond(FailResponse(ApiErrors.BAD_PASSWORD))
+
+                    newSuspendedTransaction {
+                        if (!InviteService.validateInvite(invite))
+                            call.respond(FailResponse(ApiErrors.BAD_INVITE))
+
+                        val newUserId = UserService.createUser(NewUser(email, password))!!
+                        call.sessions.set(UserSession(newUserId))
+                        InviteService.useInvite(invite, newUserId)
+                    }
+                    call.respond(ApiResponse(true))
+                }
                 authenticate(AUTH_NAME) {
                     get("me") {
                         val userId = call.sessions.get<UserSession>()!!.userId
@@ -131,19 +152,15 @@ fun Application.configureRouting() {
                             call.respond(HttpStatusCode.Unauthorized, FailResponse(ApiErrors.UNAUTHORIZED))
                         }
                     }
-                    put("{id}") {
-                        val userId = call.sessions.get<UserSession>()!!.userId
-                        if (userId != call.parameters["id"]!!.toLong()) {
+                    put("{me}") {
+                        val userId = call.sessions.get<UserSession>()?.userId
+                        val password = call.receive<ChangeProfileRequest>().password.trim()
+                        if (userId == null)
                             call.respond(HttpStatusCode.Unauthorized, FailResponse(ApiErrors.UNAUTHORIZED))
-                        } else {
-                            call.respond(
-                                ApiResponse(
-                                    UserService.updateUser(
-                                        call.parameters["id"]!!.toLong(),
-                                        call.receive<User>()
-                                    )
-                                )
-                            )
+                        else if (!UserService.validatePassword(password))
+                            call.respond(HttpStatusCode.BadRequest, FailResponse(ApiErrors.BAD_PASSWORD))
+                        else {
+                            call.respond(ApiResponse(UserService.updateUser(userId, password)))
                         }
                     }
                 }

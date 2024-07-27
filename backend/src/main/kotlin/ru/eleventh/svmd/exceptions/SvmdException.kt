@@ -1,6 +1,6 @@
 package ru.eleventh.svmd.exceptions
 
-import ru.eleventh.svmd.model.responses.FailResponse
+import ru.eleventh.svmd.model.FailResponse
 
 class SvmdException(val errors: List<String>, val warnings: List<String>) : RuntimeException() {
 

@@ -124,7 +124,6 @@ export const Map: React.FC = () => {
         <div id="map-wrapper">
             {isModalOpened && <FilterModal initFilters={filters}/>}
             <MapContainer
-                center={metadata.center}
                 zoomControl={false}
                 whenCreated={(map: LeafletMap) => {
                     map.options.zoomSnap = 0.75

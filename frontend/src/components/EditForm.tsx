@@ -27,6 +27,7 @@ interface IProps {
 export const EditForm: React.FC<IProps> = (props: IProps) => {
     const {mapMeta, onSubmit, putResponse, isLoading} = props
     const mapId = mapMeta.identifier
+    const [point, setPoint] = useState<LatLng>()
 
     const history = useHistory();
     const routeChange = (mapId: string) => {
@@ -38,7 +39,8 @@ export const EditForm: React.FC<IProps> = (props: IProps) => {
         theme: DEFAULT_THEME,
         tileProvider: resolveTheme(DEFAULT_THEME).defaultTileProvider,
         lang: Lang.EN,
-        link: ''
+        link: '',
+        defaultColor: resolveTheme(DEFAULT_THEME).linkColor
     };
     const mapMetaWithDefaults = mergeWith(defaultTo, defaults, mapMeta);
 
@@ -51,13 +53,12 @@ export const EditForm: React.FC<IProps> = (props: IProps) => {
     })
     const isFormInvalid = useMemo(() => form.validate().hasErrors, [form.values])
 
-    const [mapCenter, setMapCenter] = useState<LatLng>();
     const tileLayerRef = useRef<LeafletTileLayer>(null)
     const markerRef = useRef<LeafletCircleMarker>(null)
 
     const MapClickHandler = () => {
         const map = useMapEvent('click', e => {
-            setMapCenter(e.latlng)
+            setPoint(e.latlng)
             map.setView(e.latlng, map.getZoom())
             markerRef.current?.redraw()
         })
@@ -144,17 +145,25 @@ export const EditForm: React.FC<IProps> = (props: IProps) => {
             </Grid.Col>
         </Grid>
 
+        {/*<TextInput*/}
+        {/*    label="Центр карты"*/}
+        {/*    description={'Кликните по месту, которое должно стать центром, на интерактивной карте ниже (масштабирование подберется автоматически исходя из содержимого)'}*/}
+        {/*    icon={<MapPin/>}*/}
+        {/*    value={form.values.center}*/}
+        {/*    disabled*/}
+        {/*/>*/}
         <MapContainer
             center={[50.0, 80.0]}
             zoom={3}
+            zoomControl={false}
             style={{border: '0px', borderRadius: '4px', width: "100%", height: "300px"}}
         >
             {
-                mapCenter &&
+                !!point &&
                 <CircleMarker
                     color={form.values.defaultColor}
                     radius={MARKER_RADIUS}
-                    center={mapCenter}
+                    center={point!}
                     ref={markerRef}
                 />
             }

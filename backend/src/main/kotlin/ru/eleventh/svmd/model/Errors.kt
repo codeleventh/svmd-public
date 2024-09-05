@@ -32,7 +32,8 @@ object TransformErrors {
     const val NO_TABLE_EXIST = "Не существует таблицы для карты с таким идентификатором"
     const val NO_TABLE_PERMISSION = "Нет прав на чтение данных (таблица не была опубликована)"
     const val TABLE_WAS_DELETED = "Таблица была удалена из Google Spreadsheets"
-    val BAD_GOOGLE_RESPONSE =
+    val BAD_GOOGLE_RESPONSE = "Не удалось выгрузить таблицу из Google Spreadsheets"
+    val BAD_GOOGLE_RESPONSE_WITH_CODE =
         { code: HttpStatusCode -> "Не удалось выгрузить таблицу из Google Spreadsheets (код ответа: ${code})" }
 
     const val NO_LINES = "В таблице отсутствуют объекты"

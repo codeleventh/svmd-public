@@ -32,18 +32,22 @@ object CacheService {
     }
 
     private suspend fun downloadSpreadsheet(spreadsheetId: String): String {
-        val response = client.get {
-            method = HttpMethod.Get
-            url("https://docs.google.com/spreadsheets/d/e/$spreadsheetId/pub?output=csv")
-            header("Content-Type", "text/plain; charset=UTF-8")
-        }
+        try {
+            val response = client.get {
+                method = HttpMethod.Get
+                url("https://docs.google.com/spreadsheets/d/e/$spreadsheetId/pub?output=csv")
+                header("Content-Type", "text/plain; charset=UTF-8")
+            }
 
-        return when (response.status) {
-            HttpStatusCode.OK -> response.body()
-            HttpStatusCode.NotFound -> throw RuntimeException(TransformErrors.NO_TABLE_EXIST)
-            HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest -> throw RuntimeException(TransformErrors.NO_TABLE_PERMISSION)
-            HttpStatusCode.Gone -> throw RuntimeException(TransformErrors.TABLE_WAS_DELETED)
-            else -> throw RuntimeException(TransformErrors.BAD_GOOGLE_RESPONSE(response.status))
+            return when (response.status) {
+                HttpStatusCode.OK -> response.body()
+                HttpStatusCode.NotFound -> throw RuntimeException(TransformErrors.NO_TABLE_EXIST)
+                HttpStatusCode.Unauthorized, HttpStatusCode.BadRequest -> throw RuntimeException(TransformErrors.NO_TABLE_PERMISSION)
+                HttpStatusCode.Gone -> throw RuntimeException(TransformErrors.TABLE_WAS_DELETED)
+                else -> throw RuntimeException(TransformErrors.BAD_GOOGLE_RESPONSE_WITH_CODE(response.status))
+            }
+        } catch (e: Exception) {
+            throw RuntimeException(TransformErrors.BAD_GOOGLE_RESPONSE)
         }
     }
 }

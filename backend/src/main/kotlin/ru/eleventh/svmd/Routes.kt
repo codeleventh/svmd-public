@@ -164,6 +164,17 @@ fun Application.configureRouting() {
                     }
                 }
             }
+            authenticate(AUTH_NAME) {
+                route("admin") {
+                    post("generate-invites") {
+                        if (!Config.adminEndpointsEnabled) {
+                            call.respond(HttpStatusCode.Forbidden)
+                        }
+                        val (amount) = call.receive<GenerateInvitesRequest>()
+                        call.respond(InviteService.generateInvites(amount))
+                    }
+                }
+            }
         }
     }
 }

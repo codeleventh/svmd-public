@@ -129,7 +129,7 @@ class PersistenceService {
         }
     }
 
-    fun createInvite(inviteCode: UUID) {
+    fun createInvite(inviteCode: UUID) = dbQuery {
         InvitesTable.insert {
             it[code] = inviteCode
             it[issuedAt] = Instant.now()

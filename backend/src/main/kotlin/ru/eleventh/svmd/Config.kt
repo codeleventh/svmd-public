@@ -12,6 +12,7 @@ object Config {
     val databaseUsername: String = config.getString("svmd.db.username")
     val databasePassword: String = config.getString("svmd.db.password")
     val encryptionKey: String = config.getString("svmd.session.encryptionkey")
+    val adminEndpointsEnabled: Boolean = config.getBoolean("svmd.admin.endpoints.enabled")
     val signKey: String = config.getString("svmd.session.signkey")
     val version: String = "?"
 }

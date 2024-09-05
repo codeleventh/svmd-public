@@ -19,7 +19,6 @@ import ru.eleventh.svmd.exceptions.SvmdException
 import ru.eleventh.svmd.model.*
 import ru.eleventh.svmd.model.db.MapMeta
 import ru.eleventh.svmd.model.db.NewMap
-import ru.eleventh.svmd.model.db.NewUser
 import ru.eleventh.svmd.services.InviteService
 import ru.eleventh.svmd.services.MapService
 import ru.eleventh.svmd.services.UserService
@@ -77,7 +76,7 @@ fun Application.configureRouting() {
                     call.respond(HttpStatusCode.BadRequest, FailResponse(ApiErrors.BAD_REQUEST))
                 else if (user == null)
                     call.respond(HttpStatusCode.BadRequest, FailResponse(ApiErrors.NOT_FOUND))
-                else if (user.password != password) {
+                else if (!UserService.isPasswordMatch(user.password, password)) {
                     call.respond(HttpStatusCode.Unauthorized, FailResponse(ApiErrors.BAD_CREDS))
                 } else {
                     call.sessions.set(UserSession(user.id))
@@ -136,7 +135,7 @@ fun Application.configureRouting() {
                         if (!InviteService.validateInvite(invite))
                             call.respond(FailResponse(ApiErrors.BAD_INVITE))
 
-                        val newUserId = UserService.createUser(NewUser(email, password))!!
+                        val newUserId = UserService.createUser(email, password)!!
                         call.sessions.set(UserSession(newUserId))
                         InviteService.useInvite(invite, newUserId)
                     }

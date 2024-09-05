@@ -1,15 +1,24 @@
 package ru.eleventh.svmd.services
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
+import org.mindrot.jbcrypt.BCrypt
 import ru.eleventh.svmd.exceptions.SvmdException
 import ru.eleventh.svmd.model.ApiErrors
 import ru.eleventh.svmd.model.db.NewUser
 import ru.eleventh.svmd.model.db.User
 
 object UserService {
-    fun createUser(newUser: NewUser): Long? {
+    private fun hashPassword(password: String): String {
+        return BCrypt.hashpw(password, BCrypt.gensalt())
+    }
+
+    fun isPasswordMatch(passwordHash: String, password: String): Boolean {
+        return BCrypt.checkpw(password, passwordHash)
+    }
+
+    fun createUser(email: String, password: String): Long? {
         try {
-            return dao.createUser(newUser)
+            return dao.createUser(NewUser(email, hashPassword(password)))
         } catch (e: ExposedSQLException) {
             throw SvmdException(ApiErrors.DUPLICATED_EMAIL)
         }
@@ -24,7 +33,7 @@ object UserService {
     }
 
     fun updateUser(userId: Long, password: String): Boolean {
-        return dao.updateUser(userId, password) == 1
+        return dao.updateUser(userId, hashPassword(password)) == 1
     }
 
     fun validatePassword(password: String): Boolean {
